@@ -384,11 +384,26 @@ def do_echo(update: Update, context: CallbackContext):
                 parse_mode=ParseMode.HTML
             )
         elif text == "AllData":
-            context.bot.send_message(
-                chat_id = creator,
-                text=u'%s'%(table.getAllData()),
-                parse_mode=ParseMode.HTML
-            )
+            try:
+                requestParticipants = table.getAllData()
+                s = io.StringIO()
+                csv.writer(s).writerows(requestParticipants)
+                s.seek(0)
+                buf = io.BytesIO()
+                buf.write(s.getvalue().encode())
+                buf.seek(0)
+                buf.name = 'report_from_database.csv'
+                context.bot.send_document(
+                    chat_id=creator,
+                    document=buf
+                )
+            
+            except:
+                context.bot.send_message(
+                    chat_id = creator,
+                    text="Error",
+                    parse_mode=ParseMode.HTML
+                )
         elif text in table.getUserIds():
             table.delUser(text)
             context.bot.send_message(
